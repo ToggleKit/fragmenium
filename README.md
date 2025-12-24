@@ -14,10 +14,8 @@ You can install Fragmenium via npm:
 ```bash
 npm i fragmenium
 ```
-You can also use ProposeJS via CDN
-```HTML
-<script src='https://cdn.jsdelivr.net/gh/ToggleKit/fragmenium/engine.js' ></script>
-```
+Download Fragmenium engine 
+[Download](https://raw.githubusercontent.com/ToggleKit/fragmenium/main/mini.engine.js)
 ## ✨ Features
 - No server‑side execution  
 - Valid URL & SEO friendly  
