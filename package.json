@@ -1,0 +1,27 @@
+{
+    "name": "fragmenium",
+    "version": "1.0.0",
+    "description": "A fragment executor engine for modular web-native DSLs",
+    "keywords": [
+        "dsl",
+        "web",
+        "fragment",
+        "engine"
+    ],
+    "homepage": "https://github.com/ToggleKit/fragmenium#readme",
+    "bugs": {
+        "url": "https://fragmenium.pages.dev"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/ToggleKit/fragmenium.git"
+    },
+    "license": "MIT",
+    "author": "ToggleKit",
+    "type": "commonjs",
+    "main": "engine.js",
+    "scripts": {
+        "start": "node engine.js",
+        "test": "echo \"No test specified\" && exit 0"
+    }
+}

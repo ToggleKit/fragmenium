@@ -16,7 +16,7 @@ npm i fragmenium
 ```
 You can also use ProposeJS via CDN
 ```HTML
-<script src='https://cdn.jsdelivr.net/gh/ToggleKit/fragmanium/engine.js' ></script>
+<script src='https://cdn.jsdelivr.net/gh/ToggleKit/fragmenium/engine.js' ></script>
 ```
 ## ✨ Features
 - No server‑side execution  
