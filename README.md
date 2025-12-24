@@ -14,8 +14,9 @@ You can install Fragmenium via npm:
 ```bash
 npm i fragmenium
 ```
-Download Fragmenium engine 
-[Download](https://raw.githubusercontent.com/ToggleKit/fragmenium/main/mini.engine.js)
+Download Fragmenium Template
+[Download](https://github.com/ToggleKit/fragmenium/archive/refs/heads/main.zip
+)
 ## ✨ Features
 - No server‑side execution  
 - Valid URL & SEO friendly  
