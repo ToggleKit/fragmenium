@@ -1,16 +1,17 @@
 {
     "name": "fragmenium",
-    "version": "1.0.0",
-    "description": "A fragment executor engine for modular web-native DSLs",
+    "version": "1.1.0",
+    "description": "Rapidly develop a maintainable Single Page Application (SPA) using pure HTML,CSS & JS.",
     "keywords": [
         "dsl",
         "web",
         "fragment",
-        "engine"
+        "engine",
+        "fragmenium"
     ],
-    "homepage": "https://github.com/ToggleKit/fragmenium#readme",
+    "homepage": "https://fragmenium.pages.dev",
     "bugs": {
-        "url": "https://fragmenium.pages.dev"
+        "url": "https://github.com/ToggleKit/fragmenium/issues"
     },
     "repository": {
         "type": "git",
@@ -19,9 +20,9 @@
     "license": "MIT",
     "author": "ToggleKit",
     "type": "commonjs",
-    "main": "engine.js",
+    "main": "mini.engine.js",
     "scripts": {
-        "start": "node engine.js",
+        "start": "node mini.engine.js",
         "test": "echo \"No test specified\" && exit 0"
     }
 }

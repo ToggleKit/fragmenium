@@ -1,10 +1,9 @@
 (async () => {
-    window.cleanup = async ()=> {
+    window.cleanup = async () => {
         if (!old_v_page) old_v_page = window.location.pathname;
         common_css();
         specific_css();
         await unique_html();
-        await constant_html();
         await common_html();
         await every_js();
         await common_js();
@@ -17,7 +16,6 @@
     const ref = await import('./reference.js').then((module) => module.ref);
     const frag = document.createRange();
     const body = document.body;
-    let previous_common_scripts;
     if (ref.swap) {
         swaps(body);
     };
@@ -32,23 +30,17 @@
     await specific_js();
     old_v_page = window.location.pathname;
     window.addEventListener("popstate", cleanup);
-    body.addEventListener("click", async (e) => {
-        if (e.target.tagName == "A" && !e.target.getAttribute("target") || e.target.closest("a:not([target])")) {
-            e.preventDefault();
-            if (e.target.hash || e.target.closest("a").hash) {
-                const ele = e.target.hash ? document.querySelector(e.target.hash) : document.querySelector(e.target.closest("a").hash);
-                if (!ele) return;
-                history.replaceState(null, "", e.target.hash);
-                ele.scrollIntoView({ behavior: 'smooth' })
-            } else {
-                let path = e.target.tagName == "A" ? e.target.href : e.target.closest("a:not([target])").href;
-                history.pushState({}, "", path);
-                await cleanup();
-            }
 
-        }
+    body.addEventListener('click', async e => {
+        const a = e.target.tagName === 'A' ? e.target : e.target.closest('a');
+        if (!a || a.hasAttribute('target')) return;
+        const proto = new URL(a.href).protocol;
+        if (proto !== 'https:' && proto !== 'http:') return;
+        e.preventDefault();
+        history.pushState({}, '', a.href);
+        await cleanup();
     });
-    
+
     function constant_css() {
         if (ref?.css?.constant) {
             ref.css.constant.forEach(path => {
@@ -68,9 +60,9 @@
         if (matched) matched.forEach(u => css_apply(u, 'common'));
     }
     function specific_css() {
-        if (!ref?.css?.specifics) return;
+        if (!ref?.css?.specific) return;
         document.head.querySelectorAll('link[data-type="specific"]').forEach(l => l.remove());
-        const matchedCSS = ref.css.specifics[window.location.pathname];
+        const matchedCSS = ref.css.specific[window.location.pathname];
         if (!matchedCSS) return;
         matchedCSS.forEach(u => css_apply(u, "specific"));
     }
@@ -84,13 +76,14 @@
     async function unique_html(e) {
         if (ref.unique) {
             const pathname = window.location.pathname;
-            const text = await fetch_text(pathname);
-            if (!text) {
+            const res = await fetch(pathname);
+            if (!res.ok) {
                 const path = ref.error_page ? ref.error_page : `/404.html`;
                 history.replaceState({}, "", path);
                 unique_html();
                 return;
             }
+            const text = await res.text();
             const dom = await frag.createContextualFragment(text);
 
             const tasks = ref.unique.map(async (selector) => {
@@ -156,18 +149,13 @@
     }
     async function common_js() {
         if (!ref?.js?.common) return;
+        iframe_remover("#common_js");
         const path = new Path(window.location.pathname);
         let directory = path.directory_path();
         if (directory == "") directory = "/";
         const matchedJS = ref.js.common[directory];
-        if (window.active_js_dir && window.active_js_dir !== directory) {
-            iframe_remover("#common_js");
-        } else if (window.active_js_dir && window.active_js_dir == directory) {
-            iframe_remover("#common_js");
-            await js(ref.js.common[directory], "common_js", directory)
-        } else if (matchedJS && window.active_js_dir !== directory) {
-            window.active_js_dir = directory;
-            await js(ref.js.common[directory], "common_js", directory)
+        if (matchedJS) {
+            await js(ref.js.common[directory], "common_js");
         }
     }
     async function specific_js() {
@@ -176,52 +164,30 @@
         const pathname = window.location.pathname;
         const matchedJS = ref.js.specific[pathname];
         if (matchedJS) {
-            await js(matchedJS, "specific_js")
+            await js(matchedJS, "specific_js");
         }
     }
     async function every_js() {
         if (ref?.js?.every) {
             iframe_remover('#every_js');
-            await js(ref.js.every, "every_js")
+            await js(ref.js.every, "every_js");
         }
     }
     async function constant_js() {
         if (ref?.js?.constant) {
-            for (const path of ref.js.constant) {
-                try {
-                    await import(path);
-                } catch (err) {
-                    console.log(`issue with: ${path}\n${err}`)
-                }
-            }
+            iframe_remover("#constant_js");
+            await js(ref?.js?.constant)
         }
     }
     async function constant_html() {
         if (ref.constant) {
             const constant_task = ref.constant.map(async constant => {
-                const key = `constant_html_default_${constant.selector}`;
                 const pathname = window.location.pathname;
-                const default_constant = `default_constant_${constant.selector}_polluted`;
                 let text;
                 if (constant.except?.[pathname]) {
                     text = await fetch_text(constant.except[pathname]);
-                    window[default_constant] = true;
                 } else {
-                    switch (window[default_constant]) {
-                        case undefined:
-                            window[default_constant] = false;
-                            text = await fetch_text(constant.path);
-                            window[key] = text;
-                            break;
-                        case true:
-                            text = window[key];
-                            if (!text) {
-                                text = await fetch_text(constant.path);
-                            }
-                            break;
-                        case false:
-                            return;
-                    }
+                    text = await fetch_text(constant.path)
                 }
                 const constant_frag = await frag.createContextualFragment(text);
                 const constant_ele = constant_frag.querySelector(constant.selector);
@@ -268,18 +234,53 @@
         await Promise.all(tasks);
     }
     async function fetch_text(path) {
-        if (path !== "" && path !== " ") {
-            const text = await fetch(path).then(res => res.text());
-            if (text) {
-                return text;
-            } else {
-                return false;
+        if (ref.version !== "dev") {
+            const CACHE_NAME = "Fragmenium";
+            const VERSION_KEY = new Request("/fragment-version");
+            const cache = await caches.open(CACHE_NAME);
+
+            const versionRes = await cache.match(VERSION_KEY);
+            const cachedVersion = versionRes ? await versionRes.text() : null;
+
+            if (cachedVersion !== ref.version) {
+                await caches.delete(CACHE_NAME);
+                const newCache = await caches.open(CACHE_NAME);
+
+                await newCache.put(
+                    VERSION_KEY,
+                    new Response(ref.version, {
+                        headers: { "Content-Type": "text/plain; charset=utf-8" }
+                    })
+                );
+
+                const res = await fetch(path);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                await newCache.put(
+                    path,
+                    res.clone()
+                );
+                return await res.text();
             }
 
+            const cachedRes = await cache.match(path);
+            if (cachedRes) {
+                return await cachedRes.text();
+            }
+
+            const res = await fetch(path);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            await cache.put(
+                path,
+                res.clone()
+            );
+            return await res.text();
         } else {
-            console.log(`path is not valid in "referencs.js": ${path}`)
+            const res = await fetch(path);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return await res.text();
         }
     }
+
     function iframe_remover(selector) {
         document.querySelector(selector)?.remove();
     }
@@ -303,22 +304,15 @@
             return dir_path
         }
     }
-    async function js(context, id, directory) {
-        if (id === 'common_js') {
-            if (directory === window.active_js_dir && previous_common_scripts) {
-                return insert(previous_common_scripts);
-            }
-            window.active_js_dir = directory;
-        }
+    async function js(context, id) {
         const scripts = await Promise.all(
             context.map(async path => {
                 const txt = await fetch_text(path);
                 return `\n //start ${path}\n${txt}\n//end ${path}\n`;
             })
         );
-
-        if (id === 'common_js') previous_common_scripts = scripts;
         insert(scripts);
+        if (id === "every_js") window.js_every_EXECUUTE = scripts;
         function insert(list) {
             const code = `(async()=>{ with(top.window){ ${list.join('\n')} } })();`;
             const iframe = document.createElement('iframe');
