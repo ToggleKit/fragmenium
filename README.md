@@ -2,7 +2,7 @@
 [![GitHub License](https://img.shields.io/badge/license-MIT-blue.svg)](https://proposejs.pages.dev/p/licence.html) ![NPM Version](https://img.shields.io/npm/v/fragmenium)
 
 Fragmenium is a **Fragment Executor Engine** that enables rapid development of maintainable **Single Page Applications (SPA)** using pure **HTML**, **CSS**, and **JavaScript**.  
-It is ultra‑lightweight (~10kb), SEO‑friendly, and requires no server‑side execution or build process.
+It is ultra‑lightweight (5.39kb), SEO‑friendly, and requires no server‑side execution or build process.
 
 ---
 
@@ -26,10 +26,12 @@ Download Fragmenium Template
 - Compatible with existing frameworks/libraries  
 - No build step required  
 - Easy to use  
-- Ultra lightweight (~10kb)  
+- Ultra lightweight (5.39kb)
 - Efficient & high performance  
 - Reusable fragments  
 - Pure JavaScript cleanup  
+- Cost savings for servers
+- Less server side request
 
 ---
 
