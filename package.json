@@ -1,6 +1,6 @@
 {
     "name": "fragmenium",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "description": "Rapidly develop a maintainable Single Page Application (SPA) using pure HTML,CSS & JS.",
     "keywords": [
         "dsl",
